@@ -1,0 +1,12 @@
+[Unit]
+Description=I2C bus timing updater utility
+Requires=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/rpi-i2c 5000 20000
+RemainAfterExit=true
+User=root
+
+[Install]
+WantedBy=multi-user.target
