@@ -131,21 +131,15 @@ int main(int argc, char** argv) {
     uint16_t FEDL = (i2c_1->DEL >> 16) & 0xFFFF;
     uint16_t REDL = i2c_1->DEL & 0xFFFF;
 
-    uint16_t half_cdiv = cdiv / 2;
-    if (FEDL >= half_cdiv || REDL >= half_cdiv) {
-      printf("CDIV setting too low for current delay values: ");
-      printf("FEDL=%u, REDL=%u.\n", FEDL, REDL);
-
-      // FEDL & REDL calculation as per the i2c-bcm2835 driver code.
-      FEDL = max(cdiv / 16, 1u);
-      REDL = max(cdiv / 4, 1u);
-      printf("Updating delay values to: FEDL=%u, REDL=%u.\n", FEDL, REDL);
-    }
+    // FEDL & REDL calculation as per the i2c-bcm2835 driver code.
+    FEDL = max(cdiv / 16, 1u);
+    REDL = max(cdiv / 4, 1u);
+    printf("Updating delay values to: FEDL=%u, REDL=%u.\n", FEDL, REDL);
 
     i2c_1->DIV = (uint32_t)cdiv & 0x0000FFFF;
     i2c_1->CLKT = (uint32_t)tout & 0x0000FFFF;
     i2c_1->DEL = (uint32_t)(((uint32_t)FEDL << 16) | REDL);
-    printf("Timing values updated.\n");
+    printf("Timing values updated: CDIV=%u, CLKT=%u.\n", cdiv, tout);
   }
 
   munmap(i2c_1, sizeof(I2CRegisterSet));
