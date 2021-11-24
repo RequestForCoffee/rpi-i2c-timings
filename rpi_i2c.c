@@ -32,6 +32,26 @@ typedef struct I2CRegisterSetStruct {
 
 const char core_clk_debugfs_path[] = "/sys/kernel/debug/clk/vpu/clk_rate";
 
+void print_core_clock_speed() {
+  FILE* clk_fh;
+  if ((clk_fh = fopen(core_clk_debugfs_path, "r")) == NULL) {
+    printf("Could not open VPU core clock DebugFS path\n");
+    return;
+  }
+  uint32_t core_clk_rate;
+  if (fscanf(clk_fh, "%u", &core_clk_rate) != 1) {
+    printf("Could not read VPU core clock\n");
+    return;
+  }
+
+  if (fclose(clk_fh) != 0) {
+    printf("Could not close VPU core clock DebugFS path\n");
+    return;
+  }
+
+  printf("Core clock (Hz): %u\n", core_clk_rate);
+}
+
 int main(int argc, char** argv) {
   if (argc != 1 && argc != 3) {
     printf("Usage: rpi-i2c [<div.cdiv> <clkt.tout>]\n");
@@ -76,23 +96,7 @@ int main(int argc, char** argv) {
   printf("ARM peripheral address base: %#010x\n",
          peripheral_addr_base);
 
-  FILE* clk_fh;
-  if ((clk_fh = fopen(core_clk_debugfs_path, "r")) == NULL) {
-    perror("Could not open VPU core clock DebugFS path");
-    return errno;
-  }
-  uint32_t core_clk_rate;
-  if (fscanf(clk_fh, "%u", &core_clk_rate) != 1) {
-    perror("Could not read VPU core clock");
-    return errno;
-  }
-
-  if (fclose(clk_fh) != 0) {
-    perror("Could not close VPU core clock DebugFS path");
-    return errno;
-  }
-
-  printf("Core clock (Hz): %u\n", core_clk_rate);
+  print_core_clock_speed();
 
   int devmem_fd;
   if ((devmem_fd = open("/dev/mem", O_RDWR|O_SYNC)) < 0) {
